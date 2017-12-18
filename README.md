@@ -1,5 +1,5 @@
 # FP-CLD-AZURE1
-See for the original and latest details, http://www.st.com/en/embedded-software/fp-cld-azure1.html
+See http://www.st.com/en/embedded-software/fp-cld-azure1.html for the original and latest details.
 
 FP-CLD-AZURE1 is an STM32 ODE function pack which lets you safely connect your IoT node to Microsoft Azure IoT, transmit sensor data and receive commands from Azure cloud applications.
 
