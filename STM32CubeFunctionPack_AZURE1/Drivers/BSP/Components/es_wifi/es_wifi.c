@@ -854,30 +854,79 @@ ES_WIFI_Status_t ES_WIFI_Connect(ES_WIFIObject_t *Obj, const char* SSID,
 {
   ES_WIFI_Status_t ret;
   
+  /* set SSID */
   sprintf((char*)Obj->CmdData,"C1=%s\r", SSID);
   ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);
+
   if(ret == ES_WIFI_STATUS_OK)
   {
+    /* set password */
     sprintf((char*)Obj->CmdData,"C2=%s\r", Password);
-    ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);
     
+    HAL_Delay(500);
+    ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);
+
     if(ret == ES_WIFI_STATUS_OK)
     {
       Obj->Security = SecType;
+	  /* set security type */
       sprintf((char*)Obj->CmdData,"C3=%d\r", (uint8_t)SecType);
+             
+      HAL_Delay(500);
       ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);
-      
+            
       if(ret == ES_WIFI_STATUS_OK)
       {
-        sprintf((char*)Obj->CmdData,"C0\r");
-        ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);  
-        if(ret == ES_WIFI_STATUS_OK)
-        {
-           Obj->NetSettings.IsConnected = 1;
-        }
-      }    
-    }
-  }
+	     /* set DHCP to true */
+         sprintf((char*)Obj->CmdData,"C4=1\r");
+         HAL_Delay(500);
+         ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);
+         
+         if(ret == ES_WIFI_STATUS_OK)
+         {
+		    /* request WiFi AP disconnect */
+            sprintf((char*)Obj->CmdData, "CD\r");
+            HAL_Delay(500);
+            ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);
+            
+            if(ret == ES_WIFI_STATUS_OK)
+            {
+GET_WIFI_NET_SETTINGS:
+              /* request WiFI AP connect */
+              sprintf((char*)Obj->CmdData,"C0\r");
+			  printf("  WiFi radio connecting to AP...\r\n");
+              HAL_Delay(500);
+              ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);
+
+              if(ret == ES_WIFI_STATUS_OK)
+              {
+                 printf("    %d.%d.%d.%d\r\n",
+                        Obj->NetSettings.IP_Addr[0],
+                        Obj->NetSettings.IP_Addr[1],
+                        Obj->NetSettings.IP_Addr[2],
+                        Obj->NetSettings.IP_Addr[3]);
+                 fflush(stdout);
+                 
+                 if ( (Obj->NetSettings.IP_Addr[0] == 255))
+                 {
+                    goto GET_WIFI_NET_SETTINGS;
+                 }
+                 else
+                 {
+                     Obj->NetSettings.IsConnected = 1;
+                     HAL_Delay(1000);
+                 }
+              }
+              else
+              {
+                    goto GET_WIFI_NET_SETTINGS;
+              } /* AT Command - C0 */
+            } /* AT Command - CD */
+         } /* AT Command - C4 */
+      } /* AT Command - C3 */   
+    } /* AT Command - C2 */
+  } /* AT Command - C1 */
+
   return ret;
 }
 
