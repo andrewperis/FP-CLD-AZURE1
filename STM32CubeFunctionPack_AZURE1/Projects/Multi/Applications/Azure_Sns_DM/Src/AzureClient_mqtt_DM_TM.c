@@ -82,15 +82,16 @@ DECLARE_MODEL(Azure1_t,
 /* Event data: Temperature, Humidity... */
 WITH_DATA(ascii_char_ptr, deviceId),
 WITH_DATA(int, messageId),
-WITH_DATA(float, Temperature),
-WITH_DATA(float, Humidity),
-WITH_DATA(float, Pressure),
+//WITH_DATA(ascii_char_ptr, timestamp),
+WITH_DATA(float, temperature),
+WITH_DATA(float, humidity),
+WITH_DATA(float, pressure),
 WITH_DATA(int, accX),
 WITH_DATA(int, accY),
 WITH_DATA(int, accZ),
-WITH_DATA(int, gyrX),
-WITH_DATA(int, gyrY),
-WITH_DATA(int, gyrZ),
+WITH_DATA(int, x),
+WITH_DATA(int, y),
+WITH_DATA(int, z),
 WITH_DATA(int, magX),
 WITH_DATA(int, magY),
 WITH_DATA(int, magZ),
@@ -98,7 +99,7 @@ WITH_DATA(int, magZ),
 WITH_DATA(int, HWCounter),
 WITH_DATA(ascii_char_ptr, HWOrientation),
 #endif /* USE_STM32L475E_IOT01 */
-WITH_DATA(EDM_DATE_TIME_OFFSET, ts),
+WITH_DATA(EDM_DATE_TIME_OFFSET, timestamp),
 /* Methods */
 WITH_METHOD(Reboot),
 WITH_METHOD(Quit),
@@ -538,20 +539,20 @@ static void FillTheModelInstance(void)
   /* Read the Time  from RTC */
   now = TimingSystemGetSystemTime();
   /* Time Stamp */
-  Azure1->ts = GetDateTimeOffset(now);
+  Azure1->timestamp = GetDateTimeOffset(now);
 
   /* Update the Azure1 Model */
-  Azure1->Temperature = TEMPERATURE_Value;
-  Azure1->Humidity  = HUMIDITY_Value;
-  Azure1->Pressure  = PRESSURE_Value;
+  Azure1->temperature = TEMPERATURE_Value;
+  Azure1->humidity  = HUMIDITY_Value;
+  Azure1->pressure  = PRESSURE_Value;
 
   Azure1->accX = ACC_Value[0];
   Azure1->accY = ACC_Value[1];
   Azure1->accZ = ACC_Value[2];
 
-  Azure1->gyrX = (int) GYR_Value[0];
-  Azure1->gyrY = (int) GYR_Value[1];
-  Azure1->gyrZ = (int) GYR_Value[2];
+  Azure1->x = (int) (GYR_Value[0] );//* 0.01);
+  Azure1->y = (int) (GYR_Value[1] );//* 0.01);
+  Azure1->z = (int) (GYR_Value[2] );//* 0.01);
 
   Azure1->magX = MAG_Value[0];
   Azure1->magY = MAG_Value[1];
@@ -809,17 +810,27 @@ static void SendSNSData(void)
 
   SentMessagesCount++;
   Azure1->messageId = messages->messageTrackingId = SentMessagesCount;
-
+  
+  //uint8_t aShowTime[50] = {0};
+  //uint8_t aShowDate[50] = {0};
+  //RTC_CalendarShow(aShowTime,aShowDate);
+  //uint8_t aMyTime[100] = {0};
+  //sprintf(aMyTime, "%s %s", aShowDate, aShowTime);
+  //Azure1->timestamp = aMyTime;
+  
   if (SERIALIZE(&destination, &destinationSize,
                 Azure1->deviceId, Azure1->messageId,
-                Azure1->Temperature, Azure1->Humidity, Azure1->Pressure,
-                Azure1->accX , Azure1->accY, Azure1->accZ,
-                Azure1->gyrX , Azure1->gyrY, Azure1->gyrZ,
-                Azure1->magX , Azure1->magY, Azure1->magZ,
+                Azure1->temperature, Azure1->humidity, //Azure1->pressure,
+                // add timestamp formatted "mm/dd/yy hh:mm:ss"
+                //Azure1->timestamp,
+                //Azure1->accX , Azure1->accY, Azure1->accZ,
+                Azure1->x , Azure1->y, Azure1->z,
+                //Azure1->magX , Azure1->magY, Azure1->magZ,
 #ifndef USE_STM32L475E_IOT01
                 Azure1->HWCounter,
 #endif /* USE_STM32L475E_IOT01 */
-                Azure1->ts) != CODEFIRST_OK){
+                Azure1->timestamp) != CODEFIRST_OK)
+  {
     AZURE_PRINTF("Err: Failed to serialize\r\n");
     while(1) {
       ;
@@ -827,11 +838,14 @@ static void SendSNSData(void)
   }
 
   /* Only for Debug */
-  //AZURE_PRINTF("MessageToSend=%.*s\r\n",destinationSize,destination);
+  AZURE_PRINTF("MessageToSend=%.*s\r\n",destinationSize,destination);
 
-  if ((messages->messageHandle = IoTHubMessage_CreateFromByteArray(destination, destinationSize)) == NULL) {
+  if ((messages->messageHandle = IoTHubMessage_CreateFromByteArray(destination, destinationSize)) == NULL)
+  {
     AZURE_PRINTF("Err: iotHubMessageHandle is NULL!\r\n");
-  } else {
+  }
+  else
+  {
     char msgText[32];
     MAP_HANDLE propMap = IoTHubMessage_Properties(messages->messageHandle);
     sprintf_s(msgText, sizeof(msgText), "PropMsg_%zu", SentMessagesCount);
@@ -1088,7 +1102,8 @@ void AzureClient_mqtt_DM_TM(void)
             AZURE_VERSION_MAJOR,AZURE_VERSION_MINOR,AZURE_VERSION_PATCH,IOTHUB_SDK_VERSION);
 
     /* Board Identification */
-    sprintf(Azure1->deviceId,"%s",MAC_RegisterdAddress);
+    //sprintf(Azure1->deviceId,"%s",MAC_RegisterdAddress);
+    sprintf(Azure1->deviceId,"%s", AZURE_DEVICE_NAME);
 
     /* Telemetry Intervall */
     Azure1->TelemetryInterval = TargetBoardFeatures.TIM_CC1_Pulse/2000 /* 2Hz Timer Frequency */;

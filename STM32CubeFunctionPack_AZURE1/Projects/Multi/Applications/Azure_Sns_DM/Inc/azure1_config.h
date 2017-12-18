@@ -50,15 +50,17 @@
 /*************** Enable Print Informations ******************/
 #define AZURE_ENABLE_PRINTF
 
+#define AZURE_DEVICE_NAME "Whiskey"
+
 /*************** Default WIFI Credential ******************/
 #ifndef STM32F429xx
-#define AZURE_DEFAULT_SSID "STM"
-#define AZURE_DEFAULT_SECKEY "STMdemoPWD"
-#define AZURE_DEFAULT_PRIV_MODE WPA_Personal
+#define AZURE_DEFAULT_SSID "ssid"
+#define AZURE_DEFAULT_SECKEY "ap_password"
+#define AZURE_DEFAULT_PRIV_MODE WPA_WPA2_Personal
 #endif /* STM32F429xx */
 
 /* Uncomment the following define for enabling the Registration */
-#define AZURE_ENABLE_REGISTRATION
+//#define AZURE_ENABLE_REGISTRATION
 
 /* NTP end points */
 #define NTP_ENDPOINT_IPADDRESS_DEFAULT         "time.nist.gov"
@@ -71,7 +73,7 @@
   #define WEB_DASHBOARD_URL "stm32ode.azurewebsites.net"
 #else /* AZURE_ENABLE_REGISTRATION */
   /* String containing Hostname, Device Id & Device Key in the format:                         */
-  //#define AZUREDEVICECONNECTIONSTRING "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
+  #define AZUREDEVICECONNECTIONSTRING "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
 #endif /* AZURE_ENABLE_REGISTRATION */
 
 /*************** Don't Change the following defines *************/
@@ -123,7 +125,7 @@
 /**
   * @brief  M24SR_GPO_Config_Mode
   */
-#define M24SR_I2C_GPO_POLLING   0 /* Normal  I²C polling */
+#define M24SR_I2C_GPO_POLLING   0 /* Normal  Iï¿½C polling */
 #define M24SR_I2C_GPO_SYNCHRO   1 /* allow to use GPO polling as I2C synchronization */ 
 #define M24SR_I2C_GPO_INTERRUPT 2 /* allow to use GPO interrupt as I2C synchronization */ 
 /* The maximum size of a NDEF will be 64kBits with M24SR64 */
