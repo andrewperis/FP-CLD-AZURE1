@@ -196,6 +196,9 @@ int32_t RegistrationAgent(char **connectionString)
   uint8_t RegistrationDefaultEndPointIPAddress[36];
 
   RegistrationDefaultEndPointIPAddress[0 ] ='\0';
+  
+  WIFI_GetIP_Address(RegistrationDefaultEndPointIPAddress);
+  
   if(RegistrationDefaultEndPointIPAddress[0]=='\0') {
     AZURE_PRINTF("Err Add a valid RegistrationDefaultEndPointIPAddress on %s\r\n",__FILE__);
     return 1;
