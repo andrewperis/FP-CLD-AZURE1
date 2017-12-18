@@ -65,6 +65,8 @@ typedef enum
   None          = 0, 
   WEP           = 1,
   WPA_Personal  = 2,
+  WPA2_Personal = 3,
+  WPA_WPA2_Personal = 4,
 } WiFi_Priv_Mode;
 #else /* USE_STM32L475E_IOT01 */
 typedef enum {
