@@ -550,9 +550,9 @@ static void FillTheModelInstance(void)
   Azure1->accY = ACC_Value[1];
   Azure1->accZ = ACC_Value[2];
 
-  Azure1->x = (int) (GYR_Value[0] );//* 0.01);
-  Azure1->y = (int) (GYR_Value[1] );//* 0.01);
-  Azure1->z = (int) (GYR_Value[2] );//* 0.01);
+  Azure1->x = (int) (ACC_Value[0]);// (GYR_Value[0] );//* 0.01);
+  Azure1->y = (int) (ACC_Value[1]);//(GYR_Value[1] );//* 0.01);
+  Azure1->z = (int) (ACC_Value[2]);//(GYR_Value[2] );//* 0.01);
 
   Azure1->magX = MAG_Value[0];
   Azure1->magY = MAG_Value[1];
