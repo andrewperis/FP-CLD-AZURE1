@@ -868,8 +868,8 @@ ES_WIFI_Status_t ES_WIFI_Connect(ES_WIFIObject_t *Obj, const char* SSID,
 
     if(ret == ES_WIFI_STATUS_OK)
     {
+      /* set security type */
       Obj->Security = SecType;
-	  /* set security type */
       sprintf((char*)Obj->CmdData,"C3=%d\r", (uint8_t)SecType);
              
       HAL_Delay(500);
@@ -877,26 +877,31 @@ ES_WIFI_Status_t ES_WIFI_Connect(ES_WIFIObject_t *Obj, const char* SSID,
             
       if(ret == ES_WIFI_STATUS_OK)
       {
-	     /* set DHCP to true */
+	 /* set DHCP to true */
          sprintf((char*)Obj->CmdData,"C4=1\r");
          HAL_Delay(500);
          ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);
          
          if(ret == ES_WIFI_STATUS_OK)
          {
-		    /* request WiFi AP disconnect */
-            sprintf((char*)Obj->CmdData, "CD\r");
+            /* query WiFI settings */
+            sprintf((char*)Obj->CmdData, "C?\r");
+            printf("  %s\r\n", (char*)Obj->CmdData);
             HAL_Delay(500);
             ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);
-            
+            printf("    %d\r\n", ret);
+            printf("    %s\r\n", (char *)Obj->CmdData);
+
             if(ret == ES_WIFI_STATUS_OK)
             {
 GET_WIFI_NET_SETTINGS:
               /* request WiFI AP connect */
               sprintf((char*)Obj->CmdData,"C0\r");
-			  printf("  WiFi radio connecting to AP...\r\n");
+              printf("  WiFi radio connecting to AP...\r\n");
               HAL_Delay(500);
               ret = AT_ExecuteCommand(Obj, Obj->CmdData, Obj->CmdData);
+              printf("    %d\r\n", ret);
+              printf("    %s\r\n", (char *)Obj->CmdData);
 
               if(ret == ES_WIFI_STATUS_OK)
               {
